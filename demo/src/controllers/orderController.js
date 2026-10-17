@@ -68,11 +68,20 @@ async function clearLogs(req, res) {
         const { resetKafkaTopic } = require('../config/kafka');
         const resetRes = await resetKafkaTopic();
         orderIndex = 1;
+        const newBalance = walletService.recharge();
+        broadcast('balance_update', {
+            balance: newBalance,
+            balanceFormatted: walletService.getBalanceFormatted()
+        });
         broadcast('logs_cleared', { 
             message: `Đã làm sạch sổ cái! Topic mới [${resetRes.topic}] bắt đầu từ Offset 0.`,
             topic: resetRes.topic
         });
-        res.json({ success: true, topic: resetRes.topic });
+        res.json({ 
+            success: true, 
+            topic: resetRes.topic, 
+            balanceFormatted: walletService.getBalanceFormatted() 
+        });
     } catch (err) {
         res.status(500).json({ success: false, error: err.message });
     }
