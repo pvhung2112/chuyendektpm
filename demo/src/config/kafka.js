@@ -3,7 +3,8 @@ const { Kafka, logLevel } = require('kafkajs');
 
 const kafka = new Kafka({
     clientId: 'demo-modular-client',
-    brokers: ['localhost:9092'],
+    brokers: ['127.0.0.1:9092', 'localhost:9092'],
+    connectionTimeout: 5000,
     logLevel: logLevel.NOTHING
 });
 
@@ -11,23 +12,31 @@ let topicVersion = 1;
 let topic = `order-audit-log-v${topicVersion}`;
 let producer = null;
 
-async function initKafka() {
-    try {
-        const admin = kafka.admin();
-        await admin.connect();
-        const existingTopics = await admin.listTopics();
-        if (!existingTopics.includes(topic)) {
-            await admin.createTopics({
-                topics: [{ topic, numPartitions: 1 }]
-            });
-        }
-        await admin.disconnect();
+async function initKafka(retries = 8, delay = 1500) {
+    for (let i = 1; i <= retries; i++) {
+        try {
+            const admin = kafka.admin();
+            await admin.connect();
+            const existingTopics = await admin.listTopics();
+            if (!existingTopics.includes(topic)) {
+                await admin.createTopics({
+                    topics: [{ topic, numPartitions: 1 }]
+                });
+            }
+            await admin.disconnect();
 
-        producer = kafka.producer();
-        await producer.connect();
-        console.log(`[Kafka Config] Kết nối localhost:9092 & Topic [${topic}] thành công.`);
-    } catch (err) {
-        console.error('[Kafka Config] Lỗi kết nối:', err.message);
+            producer = kafka.producer();
+            await producer.connect();
+            console.log(`[Kafka Config] Kết nối 127.0.0.1:9092 & Topic [${topic}] thành công.`);
+            return;
+        } catch (err) {
+            if (i < retries) {
+                console.log(`[Kafka Config] Đang đợi Kafka sẵn sàng, thử lại lần ${i}/${retries}...`);
+                await new Promise(r => setTimeout(r, delay));
+            } else {
+                console.error('[Kafka Config] Lỗi kết nối:', err.message);
+            }
+        }
     }
 }
 
