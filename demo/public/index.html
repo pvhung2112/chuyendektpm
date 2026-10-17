@@ -7,58 +7,58 @@
         body {
             font-family: Arial, sans-serif;
             margin: 15px 25px;
-            background: #f7f7f7;
-            color: #000000;
+            background: #f8fafc;
+            color: #0f172a;
         }
         h1 {
             text-align: center;
             margin-bottom: 4px;
             font-size: 22px;
-            color: #000000;
+            color: #0f172a;
             letter-spacing: 0.5px;
         }
         .subtitle {
             text-align: center;
             font-size: 13px;
-            color: #444444;
-            margin-bottom: 12px;
+            color: #475569;
+            margin-bottom: 14px;
         }
-        /* Thanh sơ đồ luồng kiến trúc */
+        /* Thanh sơ đồ luồng kiến trúc: Xanh - Đen - Xanh Lá */
         .flow-nav {
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 12px;
             background: #ffffff;
-            border: 2px solid #000000;
+            border: 2px solid #0f172a;
             border-radius: 4px;
             padding: 8px 16px;
             max-width: 720px;
-            margin: 0 auto 15px auto;
+            margin: 0 auto 16px auto;
             font-weight: bold;
             font-size: 13px;
         }
         .step-badge {
-            padding: 4px 10px;
-            border-radius: 2px;
+            padding: 4px 12px;
+            border-radius: 3px;
         }
         .producer-badge {
-            background: #000000;
+            background: #0284c7;
             color: #ffffff;
-            border: 1px solid #000000;
+            border: 1px solid #0284c7;
         }
         .broker-badge {
-            background: #e5e5e5;
-            color: #000000;
-            border: 1px solid #000000;
+            background: #0f172a;
+            color: #ffffff;
+            border: 1px solid #0f172a;
         }
         .consumer-badge {
-            background: #ffffff;
-            color: #000000;
-            border: 1px solid #000000;
+            background: #059669;
+            color: #ffffff;
+            border: 1px solid #059669;
         }
         .flow-arrow {
-            color: #000000;
+            color: #0f172a;
             font-size: 14px;
             font-weight: bold;
         }
@@ -66,7 +66,7 @@
         /* KHỐI 1: PRODUCER BOX */
         .producer-section {
             background: #ffffff;
-            border: 2px solid #000000;
+            border: 2px solid #0284c7;
             border-radius: 4px;
             padding: 12px 18px;
             margin-bottom: 16px;
@@ -75,22 +75,22 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 2px solid #000000;
+            border-bottom: 2px solid #e2e8f0;
             padding-bottom: 8px;
             margin-bottom: 10px;
         }
         .section-title {
             font-size: 15px;
             font-weight: bold;
-            color: #000000;
+            color: #0284c7;
         }
         .wallet-display {
             font-size: 15px;
             font-weight: bold;
-            color: #000000;
+            color: #0f172a;
         }
         .wallet-amount {
-            color: #000000;
+            color: #0284c7;
             font-size: 18px;
         }
         .wallet-amount.deducted {
@@ -104,78 +104,81 @@
             flex-wrap: wrap;
         }
         button {
-            padding: 9px 15px;
+            padding: 9px 16px;
             cursor: pointer;
             font-size: 13px;
             font-weight: bold;
-            border: 2px solid #000000;
-            background: #ffffff;
-            color: #000000;
             border-radius: 4px;
             transition: all 0.15s ease;
         }
-        button:hover {
-            background: #000000;
+        .btn-normal {
+            background: #0284c7;
             color: #ffffff;
+            border: 2px solid #0284c7;
+        }
+        .btn-normal:hover {
+            background: #0369a1;
+            border-color: #0369a1;
         }
         .btn-vip {
-            background: #000000;
+            background: #0f172a;
             color: #ffffff;
-            border: 2px solid #000000;
+            border: 2px solid #0f172a;
         }
         .btn-vip:hover {
-            background: #333333;
-            color: #ffffff;
-        }
-        .btn-recharge {
-            padding: 5px 10px;
-            font-size: 12px;
-            background: #ffffff;
-            border: 1px solid #000000;
-            color: #000000;
-            margin-left: 10px;
-        }
-        .btn-recharge:hover {
-            background: #000000;
-            color: #ffffff;
-        }
-        .btn-replay {
-            background: #000000;
-            border: 2px solid #000000;
-            color: #ffffff;
-        }
-        .btn-replay:hover {
-            background: #333333;
-            color: #ffffff;
+            background: #334155;
+            border-color: #334155;
         }
         .btn-clear-logs {
             background: #ffffff;
-            border: 2px dashed #000000;
-            color: #000000;
+            border: 2px dashed #0f172a;
+            color: #0f172a;
         }
         .btn-clear-logs:hover {
-            background: #000000;
+            background: #0f172a;
             color: #ffffff;
             border-style: solid;
         }
+        .btn-recharge {
+            padding: 5px 12px;
+            font-size: 12px;
+            background: #f0f9ff;
+            border: 1px solid #0284c7;
+            color: #0284c7;
+            margin-left: 10px;
+        }
+        .btn-recharge:hover {
+            background: #0284c7;
+            color: #ffffff;
+        }
+        .btn-replay {
+            background: #059669;
+            border: 2px solid #059669;
+            color: #ffffff;
+        }
+        .btn-replay:hover {
+            background: #047857;
+            border-color: #047857;
+        }
         .btn-clear-console {
-            padding: 2px 7px;
+            padding: 2px 8px;
             font-size: 11px;
             background: #ffffff;
-            color: #000000;
-            border: 1px solid #000000;
+            color: #0f172a;
+            border: 1px solid #cbd5e1;
             border-radius: 3px;
             cursor: pointer;
             font-weight: normal;
         }
         .btn-clear-console:hover {
-            background: #000000;
+            background: #0f172a;
             color: #ffffff;
+            border-color: #0f172a;
         }
         .producer-note {
             text-align: center;
             font-size: 12px;
-            color: #444444;
+            color: #475569;
             margin-top: 8px;
         }
 
@@ -187,37 +190,58 @@
         .column {
             flex: 1;
             background: #ffffff;
-            border: 2px solid #000000;
+            border: 2px solid #0f172a;
             padding: 14px;
             border-radius: 4px;
         }
-        .col-title {
+        .column-rabbit {
+            border-top: 4px solid #0284c7;
+        }
+        .column-kafka {
+            border-top: 4px solid #059669;
+        }
+        .col-title-rabbit {
             font-size: 15px;
             font-weight: bold;
             margin-bottom: 4px;
             padding-bottom: 6px;
-            border-bottom: 2px solid #000000;
-            color: #000000;
+            border-bottom: 2px solid #e2e8f0;
+            color: #0284c7;
+        }
+        .col-title-kafka {
+            font-size: 15px;
+            font-weight: bold;
+            margin-bottom: 4px;
+            padding-bottom: 6px;
+            border-bottom: 2px solid #e2e8f0;
+            color: #059669;
         }
         .col-subtitle {
             font-size: 11px;
-            color: #444444;
+            color: #64748b;
             margin-bottom: 12px;
             font-style: italic;
         }
 
         .queue-box {
-            border: 1px dashed #000000;
+            border: 1px dashed #0284c7;
             padding: 8px 10px;
             margin-bottom: 10px;
-            background: #fafafa;
+            background: #f8fafc;
+            border-radius: 4px;
+        }
+        .queue-box-kafka {
+            border: 1px dashed #059669;
+            padding: 8px 10px;
+            margin-bottom: 10px;
+            background: #f0fdf4;
             border-radius: 4px;
         }
         .queue-name {
             font-size: 12px;
             font-weight: bold;
             margin-bottom: 6px;
-            color: #000000;
+            color: #0f172a;
         }
         .square-area {
             display: flex;
@@ -226,13 +250,13 @@
             min-height: 48px;
             align-items: center;
         }
-        /* Hình vuông đơn hàng thuần trắng đen */
+        /* Hình vuông đơn hàng */
         .square {
             width: 140px;
             min-height: 52px;
-            border: 2px solid #000000;
+            border: 2px solid #0f172a;
             background: #ffffff;
-            color: #000000;
+            color: #0f172a;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -244,59 +268,79 @@
             padding: 4px;
         }
         .square.normal {
-            border: 2px solid #000000;
+            border: 2px solid #0284c7;
             background: #ffffff;
-            color: #000000;
+            color: #0f172a;
         }
         .square.vip {
-            border: 2px solid #000000;
-            background: #eeeeee;
-            color: #000000;
+            border: 2px solid #0f172a;
+            background: #0f172a;
+            color: #ffffff;
         }
         .square.error {
-            border: 2px dashed #000000;
-            background: #e0e0e0;
-            color: #000000;
+            border: 2px dashed #0f172a;
+            background: #f1f5f9;
+            color: #0f172a;
         }
         .square.kafka-log {
             width: 140px;
             min-height: 64px;
-            border: 2px solid #000000;
-            background: #f7f7f7;
-            color: #000000;
+            border: 2px solid #059669;
+            background: #ffffff;
+            color: #065f46;
             font-size: 11px;
         }
         .square.kafka-error {
-            border: 2px dashed #000000;
-            background: #e0e0e0;
-            color: #000000;
+            border: 2px dashed #0f172a;
+            background: #f8fafc;
+            color: #0f172a;
         }
         .square.replaying {
-            border: 3px solid #000000 !important;
-            background: #000000 !important;
+            border: 3px solid #059669 !important;
+            background: #059669 !important;
             color: #ffffff !important;
         }
 
         /* Hộp vai trò Consumer */
-        .consumer-info-box {
-            background: #f8f8f8;
-            border: 1px solid #000000;
+        .consumer-info-box-rabbit {
+            background: #f0f9ff;
+            border: 1px solid #bae6fd;
             border-radius: 4px;
             padding: 8px 10px;
             font-size: 11px;
-            color: #000000;
+            color: #0369a1;
+            margin-bottom: 10px;
+        }
+        .consumer-info-box-kafka {
+            background: #ecfdf5;
+            border: 1px solid #a7f3d0;
+            border-radius: 4px;
+            padding: 8px 10px;
+            font-size: 11px;
+            color: #065f46;
             margin-bottom: 10px;
         }
         .consumer-info-title {
             font-weight: bold;
             margin-bottom: 3px;
-            color: #000000;
         }
 
-        .log-box {
-            border: 2px solid #000000;
-            background: #000000;
-            color: #ffffff;
+        .log-box-rabbit {
+            border: 2px solid #0284c7;
+            background: #0f172a;
+            color: #38bdf8;
+            font-family: monospace;
+            padding: 8px;
+            height: 130px;
+            overflow-y: auto;
+            font-size: 12px;
+            margin-top: 8px;
+            border-radius: 4px;
+        }
+        .log-box-kafka {
+            border: 2px solid #059669;
+            background: #0f172a;
+            color: #4ade80;
             font-family: monospace;
             padding: 8px;
             height: 130px;
@@ -334,7 +378,7 @@
             </div>
         </div>
         <div class="producer-controls">
-            <button onclick="placeOrder('normal')">PRODUCER BẮN: Đặt Đơn Thường (250.000 đ)</button>
+            <button class="btn-normal" onclick="placeOrder('normal')">PRODUCER BẮN: Đặt Đơn Thường (250.000 đ)</button>
             <button class="btn-vip" onclick="placeOrder('vip')">PRODUCER BẮN: Đặt Đơn VIP (1.500.000 đ)</button>
             <button class="btn-clear-logs" onclick="clearAllLogs()">XÓA SẠCH LOG (RESET TOÀN BỘ VỀ OFFSET 0)</button>
         </div>
@@ -344,9 +388,9 @@
     </div>
 
     <div class="container">
-        <!-- CỘT 1: RABBITMQ -->
-        <div class="column">
-            <div class="col-title">KHỐI 2A: BROKER RABBITMQ (ĐIỀU PHỐI HÀNG ĐỢI TRÊN RAM)</div>
+        <!-- CỘT 1: RABBITMQ (XANH DƯƠNG - TRẮNG - ĐEN) -->
+        <div class="column column-rabbit">
+            <div class="col-title-rabbit">KHỐI 2A: BROKER RABBITMQ (ĐIỀU PHỐI HÀNG ĐỢI TRÊN RAM)</div>
             <div class="col-subtitle">Lưu trữ tạm trong RAM. Hỗ trợ định tuyến phân luồng và Dead Letter Queue (DLQ). Xong việc gửi ACK là XÓA KHỎI RAM.</div>
 
             <div class="queue-box">
@@ -359,39 +403,39 @@
                 <div class="square-area" id="area-notify"></div>
             </div>
 
-            <div class="queue-box" style="border: 2px dashed #000000; background: #f0f0f0;">
+            <div class="queue-box" style="border: 2px dashed #0f172a; background: #f1f5f9;">
                 <div class="queue-name">HÀNG ĐỢI LỖI (DEAD LETTER QUEUE - DLQ):</div>
                 <div class="square-area" id="area-dlq"></div>
             </div>
 
             <!-- CONSUMER BÊN RABBITMQ -->
-            <div class="consumer-info-box">
+            <div class="consumer-info-box-rabbit">
                 <div class="consumer-info-title">KHỐI 3A: CONSUMER (CÁC WORKER LẮNG NGHE & TIÊU THỤ):</div>
                 • <strong>Payment Worker:</strong> Rút đơn từ Hàng đợi 1 -> Kiểm tra ví -> Đủ tiền: Trừ ví & gửi ACK (Xóa khỏi RAM) -> Kích hoạt SMS. Thiếu tiền: Gửi NACK (Bắn sang DLQ) -> Kích hoạt SMS cảnh báo.<br>
                 • <strong>Notification Worker:</strong> Rút đơn từ Hàng đợi 2 -> Bắn SMS -> Gửi ACK (Xóa khỏi RAM).
             </div>
 
             <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px; margin-bottom: 3px;">
-                <span style="font-size: 11px; font-weight: bold; color: #444;">NHẬT KÝ HOẠT ĐỘNG RABBITMQ:</span>
+                <span style="font-size: 11px; font-weight: bold; color: #475569;">NHẬT KÝ HOẠT ĐỘNG RABBITMQ:</span>
                 <button class="btn-clear-console" onclick="clearRabbitConsole()">Xóa console</button>
             </div>
-            <div class="log-box" id="log-rabbit">
+            <div class="log-box-rabbit" id="log-rabbit">
                 <div class="log-line">> RabbitMQ Broker sẵn sàng điều phối...</div>
             </div>
         </div>
 
-        <!-- CỘT 2: KAFKA -->
-        <div class="column">
-            <div class="col-title">KHỐI 2B: BROKER APACHE KAFKA (SỔ CÁI NHẬT KÝ ĐĨA CỨNG)</div>
+        <!-- CỘT 2: KAFKA (XANH LÁ - TRẮNG - ĐEN) -->
+        <div class="column column-kafka">
+            <div class="col-title-kafka">KHỐI 2B: BROKER APACHE KAFKA (SỔ CÁI NHẬT KÝ ĐĨA CỨNG)</div>
             <div class="col-subtitle">Ghi nối đuôi (Append-only) từng sự kiện vào ổ đĩa. Dữ liệu KHÔNG BAO GIỜ BỊ XÓA sau khi đọc. Cho phép tua lại (Replay).</div>
 
-            <div class="queue-box" style="min-height: 120px;">
+            <div class="queue-box-kafka" style="min-height: 120px;">
                 <div class="queue-name">SỔ CÁI NHẬT KÝ TRÊN Ổ ĐĨA (TOPIC COMMIT LOG TAPE):</div>
                 <div class="square-area" id="area-kafka"></div>
             </div>
 
             <!-- CONSUMER BÊN KAFKA -->
-            <div class="consumer-info-box">
+            <div class="consumer-info-box-kafka">
                 <div class="consumer-info-title" style="display: flex; justify-content: space-between; align-items: center;">
                     <span>KHỐI 3B: CONSUMER (SERVICE KIỂM TOÁN & ĐỐI SOÁT):</span>
                     <button class="btn-replay" onclick="replayKafka()">BẤM TUA LẠI TOÀN BỘ (REPLAY OFFSET 0)</button>
@@ -400,11 +444,11 @@
             </div>
 
             <!-- BẢNG KẾT QUẢ KIỂM TOÁN TUA LẠI TỪ KAFKA -->
-            <div id="audit-table-box" style="display: none; margin-bottom: 8px; border: 2px solid #000000; padding: 6px; background: #ffffff; border-radius: 4px;">
-                <div style="font-weight: bold; font-size: 12px; color: #000000; margin-bottom: 4px;">KẾT QUẢ CONSUMER ĐỐI SOÁT TỪ Ổ ĐĨA KAFKA:</div>
+            <div id="audit-table-box" style="display: none; margin-bottom: 8px; border: 2px solid #059669; padding: 6px; background: #ffffff; border-radius: 4px;">
+                <div style="font-weight: bold; font-size: 12px; color: #059669; margin-bottom: 4px;">KẾT QUẢ CONSUMER ĐỐI SOÁT TỪ Ổ ĐĨA KAFKA:</div>
                 <table style="width: 100%; font-size: 11px; border-collapse: collapse; text-align: left;">
                     <thead>
-                        <tr style="background: #e5e5e5; border-bottom: 2px solid #000000;">
+                        <tr style="background: #d1fae5; border-bottom: 2px solid #059669; color: #065f46;">
                             <th style="padding: 4px;">Offset</th>
                             <th style="padding: 4px;">Tên Đơn</th>
                             <th style="padding: 4px;">Giờ Đặt</th>
@@ -415,14 +459,14 @@
                     </thead>
                     <tbody id="audit-tbody"></tbody>
                 </table>
-                <div id="audit-summary" style="margin-top: 4px; font-weight: bold; font-size: 11px; color: #000000; border-top: 2px solid #000000; padding-top: 4px;"></div>
+                <div id="audit-summary" style="margin-top: 4px; font-weight: bold; font-size: 11px; color: #064e3b; border-top: 2px solid #059669; padding-top: 4px;"></div>
             </div>
 
             <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px; margin-bottom: 3px;">
-                <span style="font-size: 11px; font-weight: bold; color: #444;">NHẬT KÝ SỔ CÁI KAFKA:</span>
+                <span style="font-size: 11px; font-weight: bold; color: #475569;">NHẬT KÝ SỔ CÁI KAFKA:</span>
                 <button class="btn-clear-console" onclick="clearKafkaConsole()">Xóa console</button>
             </div>
-            <div class="log-box" id="log-kafka">
+            <div class="log-box-kafka" id="log-kafka">
                 <div class="log-line">> Kafka Broker sẵn sàng ghi nhận sự kiện...</div>
             </div>
         </div>
@@ -465,7 +509,7 @@
             const sqPay = document.createElement('div');
             sqPay.id = `sq-pay-${data.id}`;
             sqPay.className = `square ${data.type}`;
-            sqPay.innerHTML = `Trừ tiền: ${data.name}<br><span style="font-size:10px;font-weight:bold;color:#000000;">${data.priceFormatted}</span>`;
+            sqPay.innerHTML = `Trừ tiền: ${data.name}<br><span style="font-size:10px;font-weight:bold;color:${data.type === 'vip' ? '#ffffff' : '#0284c7'};">${data.priceFormatted}</span>`;
             areaPay.appendChild(sqPay);
 
             log('log-rabbit', `[PRODUCER Bắn] ${data.name} (${data.priceFormatted}) -> Đã vào Hàng Đợi Trừ Tiền chờ Consumer xử lý...`);
@@ -496,7 +540,7 @@
             const dlq = document.getElementById('area-dlq');
             const errSq = document.createElement('div');
             errSq.className = 'square error';
-            errSq.innerHTML = `Lỗi trừ tiền: ${data.name}<br><span style="font-size:10px;color:#000000;font-weight:bold;">${data.priceFormatted}</span><br><span style="font-size:9px;color:#444444;">[Thất bại: Thiếu số dư]</span>`;
+            errSq.innerHTML = `Lỗi trừ tiền: ${data.name}<br><span style="font-size:10px;color:#0f172a;font-weight:bold;">${data.priceFormatted}</span><br><span style="font-size:9px;color:#475569;">[Thất bại: Thiếu số dư]</span>`;
             dlq.appendChild(errSq);
 
             log('log-rabbit', `[CONSUMER Trừ Tiền THẤT BẠI] ${data.name} -> ${data.note} -> Gửi NACK (Vào DLQ) -> Chuyển tác vụ gửi SMS CẢNH BÁO sang Hàng Đợi 2!`);
@@ -509,7 +553,7 @@
             const sqNotify = document.createElement('div');
             sqNotify.id = `sq-notify-${data.id}`;
             sqNotify.className = data.status === 'success' ? 'square normal' : 'square error';
-            sqNotify.innerHTML = `${data.label}<br><span style="font-size:9px;color:#000000;">${data.status === 'success' ? '[SMS: Thành công]' : '[SMS: Cảnh báo thiếu tiền]'}</span>`;
+            sqNotify.innerHTML = `${data.label}<br><span style="font-size:9px;color:${data.status === 'success' ? '#059669' : '#0f172a'};">${data.status === 'success' ? '[SMS: Thành công]' : '[SMS: Cảnh báo thiếu tiền]'}</span>`;
             areaNotify.appendChild(sqNotify);
         });
 
@@ -531,7 +575,7 @@
             const sq = document.createElement('div');
             sq.className = data.isError ? 'square kafka-log kafka-error' : 'square kafka-log';
             sq.id = `kafka-sq-${data.offset}`;
-            sq.innerHTML = `Offset ${data.offset}<br><strong>${data.name}</strong><br><span style="font-size:10px;color:#000000;font-weight:bold;">${data.priceFormatted}</span><br><span style="font-size:9px;color:#000000;">${data.isError ? '[Thất bại]' : '[Thành công]'}</span><br><span style="font-size:9px;color:#444444;">${data.time}</span>`;
+            sq.innerHTML = `Offset ${data.offset}<br><strong>${data.name}</strong><br><span style="font-size:10px;color:#059669;font-weight:bold;">${data.priceFormatted}</span><br><span style="font-size:9px;color:${data.isError ? '#0f172a' : '#059669'};">${data.isError ? '[Thất bại]' : '[Thành công]'}</span><br><span style="font-size:9px;color:#475569;">${data.time}</span>`;
             area.appendChild(sq);
 
             if (data.isError) {
@@ -576,20 +620,20 @@
 
             const tbody = document.getElementById('audit-tbody');
             const row = document.createElement('tr');
-            row.style.borderBottom = '1px solid #cccccc';
+            row.style.borderBottom = '1px solid #e2e8f0';
             row.innerHTML = `
-                <td style="padding: 4px; border-bottom: 1px solid #cccccc;"><strong>Offset ${item.offset}</strong></td>
-                <td style="padding: 4px; border-bottom: 1px solid #cccccc;">${item.name}</td>
-                <td style="padding: 4px; border-bottom: 1px solid #cccccc; color: #000000;">${item.time}</td>
-                <td style="padding: 4px; border-bottom: 1px solid #cccccc;">${item.priceFormatted}</td>
-                <td style="padding: 4px; border-bottom: 1px solid #cccccc; color: #000000; font-weight: bold;">
+                <td style="padding: 4px; border-bottom: 1px solid #e2e8f0;"><strong>Offset ${item.offset}</strong></td>
+                <td style="padding: 4px; border-bottom: 1px solid #e2e8f0;">${item.name}</td>
+                <td style="padding: 4px; border-bottom: 1px solid #e2e8f0; color: #0284c7;">${item.time}</td>
+                <td style="padding: 4px; border-bottom: 1px solid #e2e8f0;">${item.priceFormatted}</td>
+                <td style="padding: 4px; border-bottom: 1px solid #e2e8f0; color: ${item.isError ? '#0f172a' : '#059669'}; font-weight: bold;">
                     ${item.isError ? '[Thất bại (DLQ)]' : '[Thành công]'}
                 </td>
-                <td style="padding: 4px; border-bottom: 1px solid #cccccc; color: #444444; font-size: 10px;">${item.note || ''}</td>
+                <td style="padding: 4px; border-bottom: 1px solid #e2e8f0; color: #475569; font-size: 10px;">${item.note || ''}</td>
             `;
             tbody.appendChild(row);
 
-            // Hiệu ứng đảo màu đen/trắng khi Consumer đang đọc khối vuông tương ứng
+            // Hiệu ứng đổi màu xanh lá khi Consumer đang đọc khối vuông tương ứng
             const sq = document.getElementById(`kafka-sq-${item.offset}`);
             if (sq) {
                 sq.classList.add('replaying');
