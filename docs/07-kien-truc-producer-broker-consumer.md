@@ -239,22 +239,16 @@ Apache Kafka ban đầu được LinkedIn phát triển và sau đó chuyển gi
 
 ```mermaid
 flowchart TD
-    P["Producer (Bên xuất bản sự kiện)"] -->|Ghi nối đuôi| TOPIC["Topic: order-events"]
-    
-    subgraph TOPIC["Topic: order-events (Lưu trên đĩa cứng)"]
-        subgraph P0["Partition 0"]
-            direction LR
-            O0["Offset 0"] --> O1["Offset 1"] --> O2["Offset 2"] --> O3["Offset 3..."]
-        end
-        subgraph P1["Partition 1"]
-            direction LR
-            M0["Offset 0"] --> M1["Offset 1"] --> M2["Offset 2..."]
-        end
+    P["Producer (Bên xuất bản sự kiện)"] -->|"Ghi nối đuôi (Append-only)"| T["Topic: order-events"]
+
+    subgraph BROKER["KAFKA BROKER (Lưu trữ trên đĩa cứng)"]
+        T --> P0["Partition 0: [Offset 0] -> [Offset 1] -> [Offset 2] -> [Offset 3]"]
+        T --> P1["Partition 1: [Offset 0] -> [Offset 1] -> [Offset 2]"]
     end
 
-    P0 -->|Consumer A (Offset: 2)| C1["Consumer Service Phân Tích"]
-    P0 -->|Consumer B (Offset: 0 - Replay)| C2["Consumer Service Kế Toán (Đối Soát)"]
-    P1 -->|Consumer C| C3["Consumer Service Chống Gian Lận"]
+    P0 -->|"Consumer 1 (Đang đọc Offset 2)"| C1["Service Phân Tích Dữ Liệu"]
+    P0 -->|"Consumer 2 (Kéo Offset 0 để Replay)"| C2["Service Kế Toán Đối Soát"]
+    P1 -->|"Consumer 3"| C3["Service Chống Gian Lận"]
 ```
 
 1. **Producer**: Ứng dụng gửi sự kiện vào Kafka Topic (kèm theo Partition Key nếu cần gom dữ liệu).
