@@ -1,7 +1,7 @@
 const express = require('express');
 const path = require('path');
 const { registerClient, removeClient } = require('./services/sseService');
-const { createOrder, replayOrders, rechargeWallet, getBalance } = require('./controllers/orderController');
+const { createOrder, replayOrders, rechargeWallet, getBalance, clearLogs } = require('./controllers/orderController');
 
 const app = express();
 
@@ -23,6 +23,7 @@ app.get('/events', (req, res) => {
 // APIs
 app.post('/api/orders', createOrder);
 app.post('/api/orders/replay', replayOrders);
+app.post('/api/orders/clear-logs', clearLogs);
 app.get('/api/wallet/balance', getBalance);
 app.post('/api/wallet/recharge', rechargeWallet);
 

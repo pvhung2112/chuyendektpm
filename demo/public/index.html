@@ -132,6 +132,27 @@
             border-color: #198754;
             color: #0f5132;
         }
+        .btn-clear-logs {
+            background: #fff5f5;
+            border-color: #dc3545;
+            color: #dc3545;
+        }
+        .btn-clear-logs:hover {
+            background: #ffe3e3;
+        }
+        .btn-clear-console {
+            padding: 2px 7px;
+            font-size: 11px;
+            background: #e9ecef;
+            color: #495057;
+            border: 1px solid #ced4da;
+            border-radius: 3px;
+            cursor: pointer;
+            font-weight: normal;
+        }
+        .btn-clear-console:hover {
+            background: #dee2e6;
+        }
         .producer-note {
             text-align: center;
             font-size: 12px;
@@ -288,6 +309,7 @@
         <div class="producer-controls">
             <button onclick="placeOrder('normal')">PRODUCER BẮN: Đặt Đơn Thường (250.000 đ)</button>
             <button class="btn-vip" onclick="placeOrder('vip')">PRODUCER BẮN: Đặt Đơn VIP (1.500.000 đ)</button>
+            <button class="btn-clear-logs" onclick="clearAllLogs()">XÓA SẠCH LOG (RESET TOÀN BỘ VỀ OFFSET 0)</button>
         </div>
         <div class="producer-note">
             * <strong>Vai trò của Producer:</strong> Khi khách bấm đặt đơn, Producer đóng gói dữ liệu đơn hàng và bắn đồng thời sang <strong>Broker RabbitMQ</strong> (để giao việc cho Worker) và <strong>Broker Kafka</strong> (để lưu nhật ký vĩnh viễn).
@@ -322,6 +344,10 @@
                 • <strong>Notification Worker:</strong> Rút đơn từ Hàng đợi 2 -> Bắn SMS -> Gửi ACK (Xóa khỏi RAM).
             </div>
 
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px; margin-bottom: 3px;">
+                <span style="font-size: 11px; font-weight: bold; color: #555;">NHẬT KÝ HOẠT ĐỘNG RABBITMQ:</span>
+                <button class="btn-clear-console" onclick="clearRabbitConsole()">Xóa console</button>
+            </div>
             <div class="log-box" id="log-rabbit">
                 <div class="log-line">> RabbitMQ Broker sẵn sàng điều phối...</div>
             </div>
@@ -365,6 +391,10 @@
                 <div id="audit-summary" style="margin-top: 4px; font-weight: bold; font-size: 11px; color: #333; border-top: 1px dashed #ccc; padding-top: 3px;"></div>
             </div>
 
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px; margin-bottom: 3px;">
+                <span style="font-size: 11px; font-weight: bold; color: #555;">NHẬT KÝ SỔ CÁI KAFKA:</span>
+                <button class="btn-clear-console" onclick="clearKafkaConsole()">Xóa console</button>
+            </div>
             <div class="log-box" id="log-kafka">
                 <div class="log-line">> Kafka Broker sẵn sàng ghi nhận sự kiện...</div>
             </div>
@@ -484,55 +514,69 @@
             }
         });
 
-        // 7. CONSUMER KAFKA: Tua lại từ đĩa cứng (Replay)
-        evt.addEventListener('kafka_replay', async () => {
-            log('log-kafka', `[KAFKA CONSUMER REPLAY] Lập trình viên gọi Seek Offset 0 -> Consumer đang đọc lại toàn bộ từ đĩa cứng...`);
-            
+        // 7. CONSUMER KAFKA: Tua lại từ đĩa cứng (Replay thật qua Kafka Consumer)
+        let replaySuccessCount = 0;
+        let replayErrorCount = 0;
+        let replayTotalRevenue = 0;
+        let replayCount = 0;
+
+        evt.addEventListener('kafka_replay_start', (e) => {
+            const data = JSON.parse(e.data);
+            log('log-kafka', `[KAFKA CONSUMER REPLAY] ${data.message}`);
+
             const tableBox = document.getElementById('audit-table-box');
             const tbody = document.getElementById('audit-tbody');
             const summary = document.getElementById('audit-summary');
             tableBox.style.display = 'block';
             tbody.innerHTML = '';
+            summary.innerHTML = 'Đang đọc tuần tự các byte từ file log trên ổ đĩa...';
 
-            let totalRevenue = 0;
-            let successCount = 0;
-            let errorCount = 0;
+            replaySuccessCount = 0;
+            replayErrorCount = 0;
+            replayTotalRevenue = 0;
+            replayCount = 0;
+        });
 
-            for (let i = 0; i < orderHistory.length; i++) {
-                const item = orderHistory[i];
-                const sq = document.getElementById(`kafka-sq-${item.offset}`);
-                if (sq) sq.classList.add('replaying');
-
-                if (item.isError) {
-                    errorCount++;
-                } else {
-                    successCount++;
-                    totalRevenue += (item.price || 0);
-                }
-
-                // Thêm dòng vào bảng kiểm toán
-                const row = document.createElement('tr');
-                row.style.borderBottom = '1px solid #eee';
-                row.innerHTML = `
-                    <td style="padding: 3px;"><strong>Offset ${item.offset}</strong></td>
-                    <td style="padding: 3px;">${item.name}</td>
-                    <td style="padding: 3px; color: #0d6efd;">${item.time}</td>
-                    <td style="padding: 3px;">${item.priceFormatted}</td>
-                    <td style="padding: 3px; color: ${item.isError ? 'red' : 'green'}; font-weight: bold;">
-                        ${item.isError ? 'Thất bại (DLQ)' : 'Thành công'}
-                    </td>
-                    <td style="padding: 3px; color: #555; font-size: 10px;">${item.note || ''}</td>
-                `;
-                tbody.appendChild(row);
-
-                log('log-kafka', `[CONSUMER ĐỌC ĐĨA] Đang đọc Offset ${item.offset}: ${item.name} (${item.priceFormatted}) -> ${item.isError ? 'Thất bại (Thiếu tiền ví)' : 'Thành công'}`);
-
-                await new Promise(r => setTimeout(r, 600));
-                if (sq) sq.classList.remove('replaying');
+        evt.addEventListener('kafka_replay_step', (e) => {
+            const item = JSON.parse(e.data);
+            replayCount++;
+            if (item.isError) {
+                replayErrorCount++;
+            } else {
+                replaySuccessCount++;
+                replayTotalRevenue += (item.price || 0);
             }
 
-            summary.innerHTML = `Tổng đơn đã đối soát: ${orderHistory.length} | Thành công: ${successCount} (Doanh thu: ${totalRevenue.toLocaleString('vi-VN')} đ) | Thất bại (DLQ): ${errorCount}`;
-            log('log-kafka', `[KAFKA CONSUMER HOÀN TẤT] Đã đối soát toàn bộ sổ cái lịch sử trên đĩa cứng thành công!`);
+            const tbody = document.getElementById('audit-tbody');
+            const row = document.createElement('tr');
+            row.style.borderBottom = '1px solid #eee';
+            row.innerHTML = `
+                <td style="padding: 3px;"><strong>Offset ${item.offset}</strong></td>
+                <td style="padding: 3px;">${item.name}</td>
+                <td style="padding: 3px; color: #0d6efd;">${item.time}</td>
+                <td style="padding: 3px;">${item.priceFormatted}</td>
+                <td style="padding: 3px; color: ${item.isError ? 'red' : 'green'}; font-weight: bold;">
+                    ${item.isError ? 'Thất bại (DLQ)' : 'Thành công'}
+                </td>
+                <td style="padding: 3px; color: #555; font-size: 10px;">${item.note || ''}</td>
+            `;
+            tbody.appendChild(row);
+
+            // Hiệu ứng nhấp nháy khối vuông tương ứng
+            const sq = document.getElementById(`kafka-sq-${item.offset}`);
+            if (sq) {
+                sq.classList.add('replaying');
+                setTimeout(() => sq.classList.remove('replaying'), 800);
+            }
+
+            log('log-kafka', `[CONSUMER ĐỌC ĐĨA] Đang đọc Offset ${item.offset}: ${item.name} (${item.priceFormatted}) -> ${item.isError ? 'Thất bại (Thiếu tiền ví)' : 'Thành công'}`);
+        });
+
+        evt.addEventListener('kafka_replay_done', (e) => {
+            const data = JSON.parse(e.data);
+            const summary = document.getElementById('audit-summary');
+            summary.innerHTML = `Tổng đơn đã đối soát từ đĩa cứng: ${replayCount} | Thành công: ${replaySuccessCount} (Doanh thu: ${replayTotalRevenue.toLocaleString('vi-VN')} đ) | Thất bại (DLQ): ${replayErrorCount}`;
+            log('log-kafka', `[KAFKA CONSUMER HOÀN TẤT] Đã đọc xong toàn bộ ${replayCount} bản ghi từ file .log trên đĩa cứng!`);
         });
 
         // Gọi API đặt đơn (PRODUCER)
@@ -557,6 +601,56 @@
                     log('log-rabbit', `[Ví Tiền] Đã nạp lại số dư ví: ${data.balanceFormatted}`);
                 });
         }
+
+        // Xóa console chữ RabbitMQ
+        function clearRabbitConsole() {
+            document.getElementById('log-rabbit').innerHTML = '<div class="log-line">> RabbitMQ Broker sẵn sàng điều phối...</div>';
+        }
+
+        // Xóa console chữ Kafka
+        function clearKafkaConsole() {
+            document.getElementById('log-kafka').innerHTML = '<div class="log-line">> Kafka Broker sẵn sàng ghi nhận sự kiện...</div>';
+        }
+
+        // Xóa toàn bộ log, ô vuông và reset sổ cái Kafka về Offset 0
+        async function clearAllLogs() {
+            // Xóa nhanh giao diện
+            document.getElementById('area-payment').innerHTML = '';
+            document.getElementById('area-notify').innerHTML = '';
+            document.getElementById('area-dlq').innerHTML = '';
+            document.getElementById('area-kafka').innerHTML = '';
+            document.getElementById('audit-table-box').style.display = 'none';
+            document.getElementById('audit-tbody').innerHTML = '';
+            document.getElementById('audit-summary').innerHTML = '';
+            orderHistory.length = 0;
+
+            clearRabbitConsole();
+            log('log-kafka', 'Đang gửi yêu cầu làm sạch Sổ Cái Kafka và đưa Offset về 0...');
+
+            try {
+                const res = await fetch('/api/orders/clear-logs', { method: 'POST' });
+                const data = await res.json();
+                if (data.success) {
+                    log('log-kafka', `[THÀNH CÔNG] Đã reset Sổ Cái! Topic mới: [${data.topic}] bắt đầu từ Offset 0.`);
+                }
+            } catch (err) {
+                log('log-kafka', `[Lỗi] Không thể kết nối server để reset: ${err.message}`);
+            }
+        }
+
+        // Đồng bộ sự kiện xóa log khi có client khác bấm nút
+        evt.addEventListener('logs_cleared', (e) => {
+            const data = JSON.parse(e.data);
+            document.getElementById('area-payment').innerHTML = '';
+            document.getElementById('area-notify').innerHTML = '';
+            document.getElementById('area-dlq').innerHTML = '';
+            document.getElementById('area-kafka').innerHTML = '';
+            document.getElementById('audit-table-box').style.display = 'none';
+            document.getElementById('audit-tbody').innerHTML = '';
+            document.getElementById('audit-summary').innerHTML = '';
+            orderHistory.length = 0;
+            log('log-kafka', `[ĐỒNG BỘ] ${data.message}`);
+        });
     </script>
 </body>
 </html>

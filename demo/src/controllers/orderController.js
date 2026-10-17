@@ -1,4 +1,5 @@
 const { publishOrder } = require('../config/rabbitmq');
+const { replayFromBeginning, topic } = require('../config/kafka');
 const { broadcast } = require('../services/sseService');
 const walletService = require('../services/walletService');
 
@@ -32,7 +33,17 @@ async function createOrder(req, res) {
 }
 
 function replayOrders(req, res) {
-    broadcast('kafka_replay', {});
+    broadcast('kafka_replay_start', { message: `Kafka Consumer đang mở file .log trên đĩa cứng từ Offset 0...` });
+    
+    replayFromBeginning(
+        (data) => {
+            broadcast('kafka_replay_step', data);
+        },
+        (totalCount) => {
+            broadcast('kafka_replay_done', { total: totalCount });
+        }
+    );
+
     res.json({ success: true });
 }
 
@@ -52,9 +63,25 @@ function getBalance(req, res) {
     });
 }
 
+async function clearLogs(req, res) {
+    try {
+        const { resetKafkaTopic } = require('../config/kafka');
+        const resetRes = await resetKafkaTopic();
+        orderIndex = 1;
+        broadcast('logs_cleared', { 
+            message: `Đã làm sạch sổ cái! Topic mới [${resetRes.topic}] bắt đầu từ Offset 0.`,
+            topic: resetRes.topic
+        });
+        res.json({ success: true, topic: resetRes.topic });
+    } catch (err) {
+        res.status(500).json({ success: false, error: err.message });
+    }
+}
+
 module.exports = {
     createOrder,
     replayOrders,
     rechargeWallet,
-    getBalance
+    getBalance,
+    clearLogs
 };
