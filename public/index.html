@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>So Sánh Trực Quan: RabbitMQ vs Apache Kafka | Chuyên Đề KTPM</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- HEADER -->
+    <header class="app-header">
+        <div class="header-left">
+            <div class="logo-badge">
+                <span class="icon">⚡</span>
+                <span>KTPM ARCHITECTURE LAB</span>
+            </div>
+            <h1>So Sánh Trực Quan Kiến Trúc: RabbitMQ vs Apache Kafka</h1>
+            <p class="subtitle">Mô phỏng & tương tác thời gian thực: Task Routing & DLQ vs Event Streaming & Commit Log Replay</p>
+        </div>
+        <div class="header-right">
+            <div class="status-cluster">
+                <div class="status-pill status-rabbitmq" id="status-rabbit">
+                    <span class="dot"></span>
+                    <span>RabbitMQ (CloudAMQP)</span>
+                </div>
+                <div class="status-pill status-kafka" id="status-kafka">
+                    <span class="dot"></span>
+                    <span>Kafka (KRaft :9092)</span>
+                </div>
+            </div>
+            <div class="header-actions">
+                <button id="btn-auto-demo" class="btn btn-primary">
+                    <span class="btn-icon">▶</span>
+                    <span>Chạy Kịch Bản Tự Động</span>
+                </button>
+                <button id="btn-reset" class="btn btn-secondary">
+                    <span class="btn-icon">🔄</span>
+                    <span>Làm Mới</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN COMPARISON GRID -->
+    <main class="comparison-container">
+        <!-- CỘT TRÁI: RABBITMQ -->
+        <section class="card panel-rabbitmq">
+            <div class="panel-header">
+                <div class="panel-title">
+                    <span class="tech-icon">🐇</span>
+                    <div>
+                        <h2>RabbitMQ: Phân Phối Tác Vụ & Định Tuyến (Task Routing)</h2>
+                        <span class="tag tag-rabbit">Mô hình: Broker-Centric / Push / RAM Buffer</span>
+                    </div>
+                </div>
+                <div class="panel-badge">Xong việc là xóa (ACK)</div>
+            </div>
+
+            <!-- Điều khiển RabbitMQ -->
+            <div class="control-box">
+                <div class="control-label">Bắn tác vụ vào Exchange:</div>
+                <div class="button-group">
+                    <button class="btn btn-sm btn-vip" onclick="publishRabbitTask('vip')">
+                        ⭐ Bắn Task VIP (Diamond)
+                    </button>
+                    <button class="btn btn-sm btn-normal" onclick="publishRabbitTask('normal')">
+                        📦 Bắn Task Thường
+                    </button>
+                    <button class="btn btn-sm btn-poison" onclick="publishRabbitTask('poison')">
+                        ⚠️ Bắn Task Hỏng (Poison)
+                    </button>
+                </div>
+            </div>
+
+            <!-- Sơ đồ trực quan RabbitMQ -->
+            <div class="visual-canvas rabbit-canvas">
+                <!-- 1. Producer -->
+                <div class="canvas-node node-producer">
+                    <div class="node-icon">📤</div>
+                    <div class="node-name">Backend API</div>
+                    <div class="node-desc">Đẩy tác vụ</div>
+                </div>
+
+                <div class="canvas-arrow">➜</div>
+
+                <!-- 2. Exchange -->
+                <div class="canvas-node node-exchange">
+                    <div class="node-icon">🔀</div>
+                    <div class="node-name">Topic Exchange</div>
+                    <div class="node-sub">topic_task_exchange</div>
+                </div>
+
+                <div class="canvas-arrow">➜</div>
+
+                <!-- 3. Queues Cluster -->
+                <div class="queues-stack">
+                    <!-- Queue VIP -->
+                    <div class="queue-card queue-vip" id="ui-queue-vip">
+                        <div class="queue-header">
+                            <span class="q-title">Hàng đợi VIP (task.vip)</span>
+                            <span class="q-count" id="count-vip">0 task</span>
+                        </div>
+                        <div class="queue-slots" id="slots-vip">
+                            <div class="empty-placeholder">Đang chờ tác vụ...</div>
+                        </div>
+                    </div>
+
+                    <!-- Queue Normal -->
+                    <div class="queue-card queue-normal" id="ui-queue-normal">
+                        <div class="queue-header">
+                            <span class="q-title">Hàng đợi Thường (task.normal)</span>
+                            <span class="q-count" id="count-normal">0 task</span>
+                        </div>
+                        <div class="queue-slots" id="slots-normal">
+                            <div class="empty-placeholder">Đang chờ tác vụ...</div>
+                        </div>
+                    </div>
+
+                    <!-- Dead Letter Queue (DLQ) -->
+                    <div class="queue-card queue-dlq" id="ui-queue-dlq">
+                        <div class="queue-header">
+                            <span class="q-title">🛡️ Dead Letter Queue (DLQ)</span>
+                            <span class="q-count" id="count-dlq">0 lỗi</span>
+                        </div>
+                        <div class="queue-slots" id="slots-dlq">
+                            <div class="empty-placeholder">Cô lập tác vụ lỗi ở đây...</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="canvas-arrow">➜</div>
+
+                <!-- 4. Workers -->
+                <div class="workers-stack">
+                    <div class="worker-card worker-vip" id="ui-worker-vip">
+                        <div class="worker-avatar">👷‍♂️ VIP</div>
+                        <div class="worker-status" id="status-worker-vip">Đang rảnh</div>
+                    </div>
+                    <div class="worker-card worker-normal" id="ui-worker-normal">
+                        <div class="worker-avatar">👷 Normal</div>
+                        <div class="worker-status" id="status-worker-normal">Đang rảnh</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Log sự kiện RabbitMQ -->
+            <div class="log-container">
+                <div class="log-header">
+                    <span>Nhật ký luồng RabbitMQ (Xóa RAM khi ACK / Chuyển DLQ khi NACK):</span>
+                    <button class="btn-clear" onclick="clearLog('log-rabbit')">Xóa log</button>
+                </div>
+                <div class="log-body" id="log-rabbit">
+                    <div class="log-entry info">[Hệ thống] RabbitMQ sẵn sàng điều phối tác vụ.</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CỘT PHẢI: APACHE KAFKA -->
+        <section class="card panel-kafka">
+            <div class="panel-header">
+                <div class="panel-title">
+                    <span class="tech-icon">🐘</span>
+                    <div>
+                        <h2>Apache Kafka: Dòng Chảy Sự Kiện & Tua Lại (Event Stream & Replay)</h2>
+                        <span class="tag tag-kafka">Mô hình: Log-Centric / Pull / Append-Only Disk</span>
+                    </div>
+                </div>
+                <div class="panel-badge panel-badge-kafka">Lưu vĩnh viễn trên đĩa</div>
+            </div>
+
+            <!-- Điều khiển Kafka -->
+            <div class="control-box">
+                <div class="control-label">Tác vụ Dòng sự kiện (Event Streaming):</div>
+                <div class="button-group">
+                    <button class="btn btn-sm btn-kafka-produce" onclick="produceKafkaEvent()">
+                        📝 + Ghi Sự Kiện (Append)
+                    </button>
+                    <button class="btn btn-sm btn-kafka-consume" onclick="consumeKafkaMultiGroup()">
+                        👥 Chạy 2 Consumer Groups
+                    </button>
+                    <button class="btn btn-sm btn-kafka-replay" onclick="replayKafkaLog()">
+                        ⏪ TUA LẠI LỊCH SỬ (REPLAY)
+                    </button>
+                </div>
+            </div>
+
+            <!-- Sơ đồ trực quan Kafka -->
+            <div class="visual-canvas kafka-canvas">
+                <!-- Băng chuyền Commit Log -->
+                <div class="commit-log-container">
+                    <div class="commit-log-header">
+                        <span class="tape-title">💾 Ổ ĐĨA CỨNG: TOPIC COMMIT LOG (user-behavior-events)</span>
+                        <span class="tape-subtitle">Ghi nối đuôi (Append-only) • Không xóa khi đọc</span>
+                    </div>
+
+                    <!-- Băng giấy cuộn Offset -->
+                    <div class="commit-log-tape" id="commit-log-tape">
+                        <div class="tape-empty">Chưa có sự kiện nào được ghi vào Topic...</div>
+                    </div>
+                </div>
+
+                <!-- Các Consumer Groups độc lập -->
+                <div class="consumers-container">
+                    <div class="consumer-group-box group-notif" id="ui-group-notif">
+                        <div class="cg-header">
+                            <span class="cg-icon">📡</span>
+                            <span class="cg-name">Notification Service</span>
+                        </div>
+                        <div class="cg-offset-badge">
+                            Vị trí đọc: <strong id="offset-notif">-</strong>
+                        </div>
+                        <div class="cg-action" id="action-notif">Chưa bắt đầu</div>
+                    </div>
+
+                    <div class="consumer-group-box group-ai" id="ui-group-ai">
+                        <div class="cg-header">
+                            <span class="cg-icon">🤖</span>
+                            <span class="cg-name">AI Recommendation</span>
+                        </div>
+                        <div class="cg-offset-badge">
+                            Vị trí đọc: <strong id="offset-ai">-</strong>
+                        </div>
+                        <div class="cg-action" id="action-ai">Chưa bắt đầu</div>
+                    </div>
+
+                    <div class="consumer-group-box group-audit" id="ui-group-audit">
+                        <div class="cg-header">
+                            <span class="cg-icon">⏪</span>
+                            <span class="cg-name">Security Audit (Replay)</span>
+                        </div>
+                        <div class="cg-offset-badge">
+                            Vị trí tua: <strong id="offset-audit">-</strong>
+                        </div>
+                        <div class="cg-action" id="action-audit">Sẵn sàng tua lại</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Log sự kiện Kafka -->
+            <div class="log-container">
+                <div class="log-header">
+                    <span>Nhật ký luồng Kafka (Commit Log & Con trỏ Offset độc lập):</span>
+                    <button class="btn-clear" onclick="clearLog('log-kafka')">Xóa log</button>
+                </div>
+                <div class="log-body" id="log-kafka">
+                    <div class="log-entry info">[Hệ thống] Apache Kafka KRaft sẵn sàng ghi nhật ký sự kiện.</div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- BẢNG TỔNG KẾT SO SÁNH CỐT LÕI -->
+    <footer class="app-summary">
+        <div class="summary-card">
+            <div class="summary-title">🎯 KẾT LUẬN KIẾN TRÚC: "KHÔNG PHẢI CÁI NÀO NHANH HƠN LÀ CHỌN"</div>
+            <div class="summary-grid">
+                <div class="summary-col">
+                    <strong class="col-head rabbit-head">🐇 RABBITMQ (TASK QUEUE):</strong>
+                    <ul>
+                        <li><strong>Mục đích:</strong> Giao đúng việc cho đúng thợ (Email, xuất PDF, nén video).</li>
+                        <li><strong>Vòng đời dữ liệu:</strong> Xóa ngay khi Worker xác nhận (ACK) để giải phóng RAM.</li>
+                        <li><strong>Điểm mạnh độc quyền:</strong> Routing Key linh hoạt, Dead Letter Queue (DLQ) cô lập lỗi.</li>
+                    </ul>
+                </div>
+                <div class="summary-col">
+                    <strong class="col-head kafka-head">🐘 APACHE KAFKA (EVENT STREAMING):</strong>
+                    <ul>
+                        <li><strong>Mục đích:</strong> Dòng dữ liệu sự kiện liên tục, Big Data hàng triệu tin/s.</li>
+                        <li><strong>Vòng đời dữ liệu:</strong> Lưu cố định trên đĩa cứng (Commit Log) theo thời gian cấu hình.</li>
+                        <li><strong>Điểm mạnh độc quyền:</strong> Nhiều Consumer đọc độc lập, tua lại lịch sử (Replay Offset).</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="app.js"></script>
+</body>
+</html>

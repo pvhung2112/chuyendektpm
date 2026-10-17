@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Mô Hình Thực Nghiệm: Producer - Broker - Consumer (RabbitMQ vs Kafka)</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 15px 25px;
+            background: #f4f6f8;
+            color: #222;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 4px;
+            font-size: 22px;
+            color: #111;
+        }
+        .subtitle {
+            text-align: center;
+            font-size: 13px;
+            color: #555;
+            margin-bottom: 12px;
+        }
+        /* Thanh sơ đồ luồng kiến trúc */
+        .flow-nav {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            background: #fff;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            padding: 8px 16px;
+            max-width: 720px;
+            margin: 0 auto 15px auto;
+            font-weight: bold;
+            font-size: 13px;
+        }
+        .step-badge {
+            padding: 4px 10px;
+            border-radius: 4px;
+        }
+        .producer-badge {
+            background: #e7f1ff;
+            color: #0d6efd;
+            border: 1px solid #0d6efd;
+        }
+        .broker-badge {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeeba;
+        }
+        .consumer-badge {
+            background: #d1e7dd;
+            color: #0f5132;
+            border: 1px solid #badbcc;
+        }
+        .flow-arrow {
+            color: #777;
+            font-size: 14px;
+        }
+
+        /* KHỐI 1: PRODUCER BOX */
+        .producer-section {
+            background: #fff;
+            border: 2px solid #0d6efd;
+            border-radius: 6px;
+            padding: 12px 18px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #e9ecef;
+            padding-bottom: 8px;
+            margin-bottom: 10px;
+        }
+        .section-title {
+            font-size: 15px;
+            font-weight: bold;
+            color: #0d6efd;
+        }
+        .wallet-display {
+            font-size: 15px;
+            font-weight: bold;
+            color: #333;
+        }
+        .wallet-amount {
+            color: #0d6efd;
+            font-size: 18px;
+            transition: color 0.3s;
+        }
+        .wallet-amount.deducted {
+            color: #dc3545;
+        }
+        .producer-controls {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        button {
+            padding: 9px 15px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: bold;
+            border: 2px solid #555;
+            background: #fff;
+            border-radius: 4px;
+        }
+        button:hover {
+            background: #eee;
+        }
+        .btn-vip {
+            background: #fff3cd;
+            border-color: #d39e00;
+        }
+        .btn-recharge {
+            padding: 5px 10px;
+            font-size: 12px;
+            background: #f8f9fa;
+            border: 1px solid #0d6efd;
+            color: #0d6efd;
+            margin-left: 10px;
+        }
+        .btn-replay {
+            background: #d1e7dd;
+            border-color: #198754;
+            color: #0f5132;
+        }
+        .producer-note {
+            text-align: center;
+            font-size: 12px;
+            color: #666;
+            margin-top: 8px;
+        }
+
+        /* KHỐI 2 & 3: BROKER & CONSUMER */
+        .container {
+            display: flex;
+            gap: 20px;
+        }
+        .column {
+            flex: 1;
+            background: #fff;
+            border: 2px solid #aaa;
+            padding: 14px;
+            border-radius: 6px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .col-title {
+            font-size: 15px;
+            font-weight: bold;
+            margin-bottom: 4px;
+            padding-bottom: 6px;
+            border-bottom: 2px solid #ddd;
+        }
+        .col-subtitle {
+            font-size: 11px;
+            color: #666;
+            margin-bottom: 12px;
+            font-style: italic;
+        }
+
+        .queue-box {
+            border: 1px dashed #777;
+            padding: 8px 10px;
+            margin-bottom: 10px;
+            background: #fafafa;
+            border-radius: 4px;
+        }
+        .queue-name {
+            font-size: 12px;
+            font-weight: bold;
+            margin-bottom: 6px;
+            color: #333;
+        }
+        .square-area {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            min-height: 48px;
+            align-items: center;
+        }
+        /* Hình vuông đơn hàng */
+        .square {
+            width: 140px;
+            min-height: 52px;
+            border: 2px solid #333;
+            background: #fff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-size: 12px;
+            font-weight: bold;
+            border-radius: 3px;
+            padding: 4px;
+        }
+        .square.normal {
+            border-color: #0d6efd;
+            background: #e7f1ff;
+        }
+        .square.vip {
+            border-color: #d39e00;
+            background: #fff3cd;
+        }
+        .square.error {
+            border-color: #dc3545;
+            background: #f8d7da;
+        }
+        .square.kafka-log {
+            width: 140px;
+            min-height: 64px;
+            border-color: #198754;
+            background: #e8f5e9;
+            font-size: 11px;
+        }
+        .square.kafka-error {
+            border-color: #dc3545;
+            background: #ffebee;
+        }
+        .square.replaying {
+            border: 3px solid #dc3545 !important;
+            background: #ffe6e6 !important;
+        }
+
+        /* Hộp vai trò Consumer */
+        .consumer-info-box {
+            background: #f1f8f4;
+            border: 1px solid #badbcc;
+            border-radius: 4px;
+            padding: 8px 10px;
+            font-size: 11px;
+            color: #0f5132;
+            margin-bottom: 10px;
+        }
+        .consumer-info-title {
+            font-weight: bold;
+            margin-bottom: 3px;
+        }
+
+        .log-box {
+            border: 1px solid #333;
+            background: #1e1e1e;
+            color: #00ff66;
+            font-family: monospace;
+            padding: 8px;
+            height: 130px;
+            overflow-y: auto;
+            font-size: 12px;
+            margin-top: 8px;
+            border-radius: 4px;
+        }
+        .log-line {
+            margin-bottom: 3px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>MÔ HÌNH THỰC NGHIỆM: PRODUCER - BROKER - CONSUMER</h1>
+    <div class="subtitle">HỆ THỐNG ĐIỀU PHỐI TÁC VỤ (RABBITMQ) VS SỔ CÁI NHẬT KÝ ĐĨA CỨNG (APACHE KAFKA)</div>
+
+    <!-- SƠ ĐỒ 3 KHỐI -->
+    <div class="flow-nav">
+        <span class="step-badge producer-badge">KHỐI 1: PRODUCER (Bên Gửi)</span>
+        <span class="flow-arrow">──▶ Gửi đơn ──▶</span>
+        <span class="step-badge broker-badge">KHỐI 2: BROKER (RabbitMQ / Kafka)</span>
+        <span class="flow-arrow">──▶ Nhận việc ──▶</span>
+        <span class="step-badge consumer-badge">KHỐI 3: CONSUMER (Worker Xử Lý)</span>
+    </div>
+
+    <!-- KHỐI 1: PRODUCER -->
+    <div class="producer-section">
+        <div class="section-header">
+            <div class="section-title">KHỐI 1: PRODUCER (ỨNG DỤNG BÁN HÀNG PHÍA CLIENT / NƠI PHÁT SINH ĐƠN)</div>
+            <div class="wallet-display">
+                Số Dư Ví Khách: <strong id="wallet-balance" class="wallet-amount">2.000.000 đ</strong>
+                <button class="btn-recharge" onclick="rechargeWallet()">Nạp lại 2.000.000 đ</button>
+            </div>
+        </div>
+        <div class="producer-controls">
+            <button onclick="placeOrder('normal')">PRODUCER BẮN: Đặt Đơn Thường (250.000 đ)</button>
+            <button class="btn-vip" onclick="placeOrder('vip')">PRODUCER BẮN: Đặt Đơn VIP (1.500.000 đ)</button>
+        </div>
+        <div class="producer-note">
+            * <strong>Vai trò của Producer:</strong> Khi khách bấm đặt đơn, Producer đóng gói dữ liệu đơn hàng và bắn đồng thời sang <strong>Broker RabbitMQ</strong> (để giao việc cho Worker) và <strong>Broker Kafka</strong> (để lưu nhật ký vĩnh viễn).
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- CỘT 1: RABBITMQ -->
+        <div class="column">
+            <div class="col-title" style="color: #d35400;">KHỐI 2A: BROKER RABBITMQ (ĐIỀU PHỐI HÀNG ĐỢI TRÊN RAM)</div>
+            <div class="col-subtitle">Lưu trữ tạm trong RAM. Hỗ trợ định tuyến phân luồng và Dead Letter Queue (DLQ). Xong việc gửi ACK là XÓA KHỎI RAM.</div>
+
+            <div class="queue-box">
+                <div class="queue-name">HÀNG ĐỢI 1: XỬ LÝ TRỪ TIỀN VÍ (q_payment):</div>
+                <div class="square-area" id="area-payment"></div>
+            </div>
+
+            <div class="queue-box">
+                <div class="queue-name">HÀNG ĐỢI 2: XỬ LÝ GỬI THÔNG BÁO (q_notification):</div>
+                <div class="square-area" id="area-notify"></div>
+            </div>
+
+            <div class="queue-box" style="border-color: #dc3545; background: #fff8f8;">
+                <div class="queue-name" style="color: #dc3545;">HÀNG ĐỢI LỖI (DEAD LETTER QUEUE - DLQ):</div>
+                <div class="square-area" id="area-dlq"></div>
+            </div>
+
+            <!-- CONSUMER BÊN RABBITMQ -->
+            <div class="consumer-info-box">
+                <div class="consumer-info-title">KHỐI 3A: CONSUMER (CÁC WORKER LẮNG NGHE & TIÊU THỤ):</div>
+                • <strong>Payment Worker:</strong> Rút đơn từ Hàng đợi 1 -> Kiểm tra ví -> Đủ tiền: Trừ ví & gửi ACK (Xóa khỏi RAM) -> Kích hoạt SMS. Thiếu tiền: Gửi NACK (Bắn sang DLQ) -> Kích hoạt SMS cảnh báo.<br>
+                • <strong>Notification Worker:</strong> Rút đơn từ Hàng đợi 2 -> Bắn SMS -> Gửi ACK (Xóa khỏi RAM).
+            </div>
+
+            <div class="log-box" id="log-rabbit">
+                <div class="log-line">> RabbitMQ Broker sẵn sàng điều phối...</div>
+            </div>
+        </div>
+
+        <!-- CỘT 2: KAFKA -->
+        <div class="column">
+            <div class="col-title" style="color: #198754;">KHỐI 2B: BROKER APACHE KAFKA (SỔ CÁI NHẬT KÝ ĐĨA CỨNG)</div>
+            <div class="col-subtitle">Ghi nối đuôi (Append-only) từng sự kiện vào ổ đĩa. Dữ liệu KHÔNG BAO GIỜ BỊ XÓA sau khi đọc. Cho phép tua lại (Replay).</div>
+
+            <div class="queue-box" style="min-height: 120px;">
+                <div class="queue-name">SỔ CÁI NHẬT KÝ TRÊN Ổ ĐĨA (TOPIC COMMIT LOG TAPE):</div>
+                <div class="square-area" id="area-kafka"></div>
+            </div>
+
+            <!-- CONSUMER BÊN KAFKA -->
+            <div class="consumer-info-box" style="background: #e8f5e9; border-color: #badbcc; color: #0f5132;">
+                <div class="consumer-info-title" style="display: flex; justify-content: space-between; align-items: center;">
+                    <span>KHỐI 3B: CONSUMER (SERVICE KIỂM TOÁN & ĐỐI SOÁT):</span>
+                    <button class="btn-replay" onclick="replayKafka()">BẤM TUA LẠI TOÀN BỘ (REPLAY OFFSET 0)</button>
+                </div>
+                • <strong>Audit Consumer:</strong> Chủ động kéo dữ liệu từ đĩa cứng. Khi cần đối soát, Consumer kéo con trỏ Offset về 0 để đọc lại toàn bộ lịch sử mà không làm mất dữ liệu!
+            </div>
+
+            <!-- BẢNG KẾT QUẢ KIỂM TOÁN TUA LẠI TỪ KAFKA -->
+            <div id="audit-table-box" style="display: none; margin-bottom: 8px; border: 1px solid #198754; padding: 6px; background: #fff; border-radius: 4px;">
+                <div style="font-weight: bold; font-size: 12px; color: #198754; margin-bottom: 4px;">KẾT QUẢ CONSUMER ĐỐI SOÁT TỪ Ổ ĐĨA KAFKA:</div>
+                <table style="width: 100%; font-size: 11px; border-collapse: collapse; text-align: left;">
+                    <thead>
+                        <tr style="background: #e8f5e9; border-bottom: 1px solid #ccc;">
+                            <th style="padding: 3px;">Offset</th>
+                            <th style="padding: 3px;">Tên Đơn</th>
+                            <th style="padding: 3px;">Giờ Đặt</th>
+                            <th style="padding: 3px;">Giá Tiền</th>
+                            <th style="padding: 3px;">Kết Quả</th>
+                            <th style="padding: 3px;">Chi Tiết Sổ Cái</th>
+                        </tr>
+                    </thead>
+                    <tbody id="audit-tbody"></tbody>
+                </table>
+                <div id="audit-summary" style="margin-top: 4px; font-weight: bold; font-size: 11px; color: #333; border-top: 1px dashed #ccc; padding-top: 3px;"></div>
+            </div>
+
+            <div class="log-box" id="log-kafka">
+                <div class="log-line">> Kafka Broker sẵn sàng ghi nhận sự kiện...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const orderHistory = [];
+
+        function log(boxId, text) {
+            const b = document.getElementById(boxId);
+            const line = document.createElement('div');
+            line.className = 'log-line';
+            line.innerText = `> ${text}`;
+            b.appendChild(line);
+            b.scrollTop = b.scrollHeight;
+        }
+
+        // Lấy số dư ví ban đầu từ backend
+        fetch('/api/wallet/balance')
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('wallet-balance').innerText = data.balanceFormatted;
+            })
+            .catch(() => {});
+
+        // Nhận sự kiện thời gian thực từ Backend
+        const evt = new EventSource('/events');
+
+        // Cập nhật số dư ví khi nạp lại
+        evt.addEventListener('balance_update', (e) => {
+            const data = JSON.parse(e.data);
+            document.getElementById('wallet-balance').innerText = data.balanceFormatted;
+        });
+
+        // 1. Khi PRODUCER phát đơn mới -> Đưa vào Hàng Đợi Trừ Tiền của Broker RabbitMQ
+        evt.addEventListener('rabbit_new_order', (e) => {
+            const data = JSON.parse(e.data);
+
+            const areaPay = document.getElementById('area-payment');
+            const sqPay = document.createElement('div');
+            sqPay.id = `sq-pay-${data.id}`;
+            sqPay.className = `square ${data.type}`;
+            sqPay.innerHTML = `Trừ tiền: ${data.name}<br><span style="font-size:10px;font-weight:bold;color:#0d6efd;">${data.priceFormatted}</span>`;
+            areaPay.appendChild(sqPay);
+
+            log('log-rabbit', `[PRODUCER Bắn] ${data.name} (${data.priceFormatted}) -> Đã vào Hàng Đợi Trừ Tiền chờ Consumer xử lý...`);
+        });
+
+        // 2. CONSUMER (Payment Worker) Xử lý THÀNH CÔNG (Đủ tiền -> Trừ ví -> Gửi ACK -> Xóa khỏi RAM)
+        evt.addEventListener('rabbit_payment_ack', (e) => {
+            const data = JSON.parse(e.data);
+            const sq = document.getElementById(`sq-pay-${data.id}`);
+            if (sq) sq.remove();
+
+            // Cập nhật số dư ví trên màn hình
+            const balanceEl = document.getElementById('wallet-balance');
+            balanceEl.innerText = data.balanceFormatted;
+            balanceEl.classList.add('deducted');
+            setTimeout(() => balanceEl.classList.remove('deducted'), 400);
+
+            log('log-rabbit', `[CONSUMER Trừ Tiền THÀNH CÔNG] ${data.name} -> Đã trừ ${data.priceFormatted} (Ví còn ${data.balanceFormatted}) -> Gửi ACK (Xóa khỏi RAM) -> Chuyển tác vụ gửi SMS sang Hàng Đợi 2!`);
+        });
+
+        // 3. CONSUMER (Payment Worker) Xử lý THẤT BẠI (Thiếu tiền -> Gửi NACK -> Bắn sang DLQ)
+        evt.addEventListener('rabbit_payment_nack', (e) => {
+            const data = JSON.parse(e.data);
+            const sq = document.getElementById(`sq-pay-${data.id}`);
+            if (sq) sq.remove();
+
+            // Đưa vào Dead Letter Queue
+            const dlq = document.getElementById('area-dlq');
+            const errSq = document.createElement('div');
+            errSq.className = 'square error';
+            errSq.innerHTML = `Lỗi trừ tiền: ${data.name}<br><span style="font-size:10px;color:red;font-weight:bold;">${data.priceFormatted}</span><br><span style="font-size:9px;color:#555;">Số dư không đủ</span>`;
+            dlq.appendChild(errSq);
+
+            log('log-rabbit', `[CONSUMER Trừ Tiền THẤT BẠI] ${data.name} -> ${data.note} -> Gửi NACK (Vào DLQ) -> Chuyển tác vụ gửi SMS CẢNH BÁO sang Hàng Đợi 2!`);
+        });
+
+        // 4. Kích hoạt tác vụ gửi SMS vào Hàng Đợi 2 của Broker
+        evt.addEventListener('rabbit_new_notify', (e) => {
+            const data = JSON.parse(e.data);
+            const areaNotify = document.getElementById('area-notify');
+            const sqNotify = document.createElement('div');
+            sqNotify.id = `sq-notify-${data.id}`;
+            sqNotify.className = data.status === 'success' ? 'square normal' : 'square error';
+            sqNotify.innerHTML = `${data.label}<br><span style="font-size:9px;color:${data.status === 'success' ? 'green' : 'red'};">${data.status === 'success' ? 'SMS: Thành công' : 'SMS: Cảnh báo thiếu tiền'}</span>`;
+            areaNotify.appendChild(sqNotify);
+        });
+
+        // 5. CONSUMER (Notification Worker) Gửi xong SMS -> Gửi ACK -> Xóa khỏi RAM
+        evt.addEventListener('rabbit_notify_ack', (e) => {
+            const data = JSON.parse(e.data);
+            const sq = document.getElementById(`sq-notify-${data.id}`);
+            if (sq) sq.remove();
+
+            log('log-rabbit', `[CONSUMER Thông Báo XONG] ${data.message} -> Gửi ACK -> XÓA KHỎI RAM!`);
+        });
+
+        // 6. BROKER KAFKA ghi nhận sự kiện (Lưu vĩnh viễn trên đĩa cứng)
+        evt.addEventListener('kafka_new', (e) => {
+            const data = JSON.parse(e.data);
+            orderHistory.push(data);
+
+            const area = document.getElementById('area-kafka');
+            const sq = document.createElement('div');
+            sq.className = data.isError ? 'square kafka-log kafka-error' : 'square kafka-log';
+            sq.id = `kafka-sq-${data.offset}`;
+            sq.innerHTML = `Offset ${data.offset}<br><strong>${data.name}</strong><br><span style="font-size:10px;color:${data.isError ? 'red' : '#0d6efd'};font-weight:bold;">${data.priceFormatted}</span><br><span style="font-size:9px;color:${data.isError ? 'red' : 'green'};">${data.isError ? 'Thất bại' : 'Thành công'}</span><br><span style="font-size:9px;color:#666;">${data.time}</span>`;
+            area.appendChild(sq);
+
+            if (data.isError) {
+                log('log-kafka', `[KAFKA BROKER GHI ĐĨA] Offset ${data.offset}: "${data.name}" (${data.time}) - THẤT BẠI: ${data.note}`);
+            } else {
+                log('log-kafka', `[KAFKA BROKER GHI ĐĨA] Offset ${data.offset}: "${data.name}" (${data.time}) - THÀNH CÔNG: ${data.note}`);
+            }
+        });
+
+        // 7. CONSUMER KAFKA: Tua lại từ đĩa cứng (Replay)
+        evt.addEventListener('kafka_replay', async () => {
+            log('log-kafka', `[KAFKA CONSUMER REPLAY] Lập trình viên gọi Seek Offset 0 -> Consumer đang đọc lại toàn bộ từ đĩa cứng...`);
+            
+            const tableBox = document.getElementById('audit-table-box');
+            const tbody = document.getElementById('audit-tbody');
+            const summary = document.getElementById('audit-summary');
+            tableBox.style.display = 'block';
+            tbody.innerHTML = '';
+
+            let totalRevenue = 0;
+            let successCount = 0;
+            let errorCount = 0;
+
+            for (let i = 0; i < orderHistory.length; i++) {
+                const item = orderHistory[i];
+                const sq = document.getElementById(`kafka-sq-${item.offset}`);
+                if (sq) sq.classList.add('replaying');
+
+                if (item.isError) {
+                    errorCount++;
+                } else {
+                    successCount++;
+                    totalRevenue += (item.price || 0);
+                }
+
+                // Thêm dòng vào bảng kiểm toán
+                const row = document.createElement('tr');
+                row.style.borderBottom = '1px solid #eee';
+                row.innerHTML = `
+                    <td style="padding: 3px;"><strong>Offset ${item.offset}</strong></td>
+                    <td style="padding: 3px;">${item.name}</td>
+                    <td style="padding: 3px; color: #0d6efd;">${item.time}</td>
+                    <td style="padding: 3px;">${item.priceFormatted}</td>
+                    <td style="padding: 3px; color: ${item.isError ? 'red' : 'green'}; font-weight: bold;">
+                        ${item.isError ? 'Thất bại (DLQ)' : 'Thành công'}
+                    </td>
+                    <td style="padding: 3px; color: #555; font-size: 10px;">${item.note || ''}</td>
+                `;
+                tbody.appendChild(row);
+
+                log('log-kafka', `[CONSUMER ĐỌC ĐĨA] Đang đọc Offset ${item.offset}: ${item.name} (${item.priceFormatted}) -> ${item.isError ? 'Thất bại (Thiếu tiền ví)' : 'Thành công'}`);
+
+                await new Promise(r => setTimeout(r, 600));
+                if (sq) sq.classList.remove('replaying');
+            }
+
+            summary.innerHTML = `Tổng đơn đã đối soát: ${orderHistory.length} | Thành công: ${successCount} (Doanh thu: ${totalRevenue.toLocaleString('vi-VN')} đ) | Thất bại (DLQ): ${errorCount}`;
+            log('log-kafka', `[KAFKA CONSUMER HOÀN TẤT] Đã đối soát toàn bộ sổ cái lịch sử trên đĩa cứng thành công!`);
+        });
+
+        // Gọi API đặt đơn (PRODUCER)
+        function placeOrder(type) {
+            fetch('/api/orders', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ type })
+            });
+        }
+
+        // Gọi API tua lại (KAFKA CONSUMER)
+        function replayKafka() {
+            fetch('/api/orders/replay', { method: 'POST' });
+        }
+
+        // Gọi API nạp lại tiền ví
+        function rechargeWallet() {
+            fetch('/api/wallet/recharge', { method: 'POST' })
+                .then(res => res.json())
+                .then(data => {
+                    log('log-rabbit', `[Ví Tiền] Đã nạp lại số dư ví: ${data.balanceFormatted}`);
+                });
+        }
+    </script>
+</body>
+</html>
