@@ -9,9 +9,7 @@ async function bootstrap() {
     await initKafka();
 
     app.listen(PORT, () => {
-        console.log(`\n========================================================`);
-        console.log(`🚀 DEMO MODULAR SẴN SÀNG TẠI: http://localhost:${PORT}`);
-        console.log(`========================================================\n`);
+        console.log(`http://localhost:${PORT}`);
     });
 }
 

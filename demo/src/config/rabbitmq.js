@@ -5,15 +5,21 @@ const { appendOrderLog } = require('./kafka');
 
 const RABBIT_URL = 'amqps://ohemaznj:Wrm17ng33aCW-rhCGeqQPFbUGceIbJBc@capybara.lmq.cloudamqp.com/ohemaznj';
 let channel = null;
+let isConnecting = false;
 
 async function initRabbitMQ() {
+    if (isConnecting) return;
+    isConnecting = true;
     try {
         const conn = await amqp.connect(RABBIT_URL);
+        isConnecting = false;
+
         conn.on('error', (err) => {
             console.error('[RabbitMQ Connection Error]', err.message);
         });
         conn.on('close', () => {
-            console.warn('[RabbitMQ Connection Closed] Thử kết nối lại sau 5s...');
+            console.warn('[RabbitMQ Connection Closed] Mất kết nối, sẽ kết nối lại sau 5s...');
+            channel = null;
             setTimeout(initRabbitMQ, 5000);
         });
 
@@ -22,7 +28,7 @@ async function initRabbitMQ() {
             console.error('[RabbitMQ Channel Error]', err.message);
         });
 
-        // Dọn sạch các hàng đợi cũ để tránh xung đột cấu hình
+
         await channel.deleteQueue('q_payment').catch(() => {});
         await channel.deleteQueue('q_notification').catch(() => {});
         await channel.deleteQueue('q_dlq').catch(() => {});

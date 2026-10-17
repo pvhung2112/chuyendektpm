@@ -4,7 +4,8 @@
   "description": "Thực nghiệm Chuyên đề Kỹ thuật Phần mềm: Xử lý bất đồng bộ và giảm tải Backend với RabbitMQ và Redis",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
+    "dev": "node demo/server.js",
+    "start": "node demo/server.js",
     "worker": "node rabbitmq_worker.js",
     "benchmark": "node benchmark.js"
   },
